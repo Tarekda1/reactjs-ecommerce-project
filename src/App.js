@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Switch, Route } from "react-router-dom";
-import { auth } from "./firebase/utils";
+import { Switch, Route, Redirect } from "react-router-dom";
+import { auth, handleUserProfile } from "./firebase/utils";
 
 import "./default.scss";
 import HomePageLayout from "./layouts/HomePageLayout";
@@ -20,11 +20,36 @@ class App extends Component {
       ...initialState,
     };
   }
-  componentDidMount() {}
 
-  componentWillUnmount() {}
+  authListener = null;
+
+  componentDidMount() {
+    //subscribe
+    this.authListener = auth.onAuthStateChanged(async (userAuth) => {
+      if (userAuth) {
+        const userRef = await handleUserProfile(userAuth);
+        userRef.onSnapshot((snapshot) => {
+          this.setState({
+            currentUser: {
+              id: snapshot.id,
+              ...snapshot.data(),
+            },
+          });
+        });
+      }
+      this.setState({
+        ...initialState,
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    //unsubscribe
+    this.authListener();
+  }
 
   render() {
+    const { currentUser } = this.state;
     return (
       <div className="App">
         {/* <Header></Header>
@@ -34,26 +59,34 @@ class App extends Component {
             exact
             path="/"
             render={() => (
-              <HomePageLayout>
+              <HomePageLayout currentUser={currentUser}>
                 <Homepage />
               </HomePageLayout>
             )}
           />
           <Route
             path="/registration"
-            render={() => (
-              <MainLayout>
-                <Registration />
-              </MainLayout>
-            )}
+            render={() =>
+              currentUser ? (
+                <Redirect to="/" />
+              ) : (
+                <MainLayout currentUser={currentUser}>
+                  <Registration />
+                </MainLayout>
+              )
+            }
           />
           <Route
             path="/login"
-            render={() => (
-              <MainLayout>
-                <Login />
-              </MainLayout>
-            )}
+            render={() =>
+              currentUser ? (
+                <Redirect to="/" />
+              ) : (
+                <MainLayout currentUser={currentUser}>
+                  <Login />
+                </MainLayout>
+              )
+            }
           />
         </Switch>
         {/* </div> */}

@@ -14,7 +14,7 @@ class SignIn extends Component {
         <div className="wrap">
           <h2>login</h2>
           <div className="formWrap">
-            <form>
+            <form onSubmit={this.handleSubmit}>
               <div className="socialSignIn">
                 <div className="row">
                   <Button onClick={signInWithGoogle}>

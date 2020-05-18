@@ -6,7 +6,7 @@ import "./styles.scss";
 export const MainLayout = (props) => {
   return (
     <div>
-      <Header />
+      <Header {...props} />
       <div className="main">{props.children}</div>
       <Footer />
     </div>
